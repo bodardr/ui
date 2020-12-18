@@ -1,0 +1,15 @@
+{
+  "name": "com.romanb.interaction",
+  "version": "0.0.1",
+  "displayName": "Interaction System",
+  "description": "A customizable interaction system",
+  "unity": "2019.3",
+  "dependencies": {
+    "com.unity.textmeshpro": "2.0.0",
+	"com.unity.inputsystem": "1.0.1"
+ },
+  "author": {
+    "name": "Roman B.",
+    "email": "romain.bodard@videotron.ca"
+  }
+}
