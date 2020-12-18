@@ -5,7 +5,6 @@ using UnityEngine;
 public class Interactable : MonoBehaviour
 {
     private Interactor interactor;
-    private bool enabled = false;
 
     [SerializeField]
     private List<InteractionElement> interactions;
