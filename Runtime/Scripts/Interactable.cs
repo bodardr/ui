@@ -5,66 +5,55 @@ using UnityEngine;
 public class Interactable : MonoBehaviour
 {
     private Interactor interactor;
-    private bool enabled = false;
 
     [SerializeField]
     private List<InteractionElement> interactions;
 
-    private Interaction current;
+    [SerializeField]
+    private List<InteractionElement> secondaryInteractions;
 
-    public Interaction Current
-    {
-        get => current;
-        set
-        {
-            if (enabled && current)
-                current.HidePrompt();
-
-            current = value;
-
-            if (enabled && current)
-                current.ShowPrompt();
-        }
-    }
+    public Interaction Primary { get; private set; }
+    public Interaction Secondary { get; private set; }
 
     public void Enable(Interactor interactor)
     {
         this.interactor = interactor;
         UpdateInteractions();
-
-        enabled = true;
-
-        if (Current)
-            Current.ShowPrompt();
     }
 
     public void Disable()
     {
         interactor = null;
 
-        enabled = false;
+        if (Primary)
+            Primary.UnassignInteractor();
 
-        if (Current)
-            Current.HidePrompt();
+        if (Secondary)
+            Secondary.UnassignInteractor();
     }
 
     private void UpdateInteractions()
     {
         interactions.Sort((x, y) => x.weight.CompareTo(y.weight));
+        secondaryInteractions.Sort((x, y) => x.weight.CompareTo(y.weight));
 
-        foreach (var i in interactions)
+        FilterPossibleInteractions(interactions, out var primary);
+        FilterPossibleInteractions(secondaryInteractions, out var secondary);
+
+        Primary = primary;
+        Secondary = secondary;
+    }
+
+    private void FilterPossibleInteractions(List<InteractionElement> elements, out Interaction interaction)
+    {
+        foreach (var i in elements)
         {
             if (i.interaction.CanInteract(interactor))
             {
-                Current = i.interaction;
-                break;
+                interaction = i.interaction;
+                return;
             }
         }
-    }
-
-    public bool Interact()
-    {
-        Current.AssignInteractor(interactor);
-        return Current.Interact();
+        interaction = null;
     }
 }

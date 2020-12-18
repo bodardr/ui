@@ -3,9 +3,9 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
-public class Interactor : MonoBehaviour
+public abstract class Interactor : MonoBehaviour
 {
-    private HashSet<Interactable> interactables = new HashSet<Interactable>();
+    protected HashSet<Interactable> interactables = new HashSet<Interactable>();
     private Interactable current;
 
     private PlayerInput playerInput;
@@ -28,22 +28,46 @@ public class Interactor : MonoBehaviour
     [SerializeField]
     private UnityEvent onInteractionFreed;
 
-    private Interactable Current
+    protected Interactable Current
     {
         get => current;
         set
         {
-            if (current)
-            {
-                current.Disable();
-            }
+            DiscardCurrentInteraction();
 
             current = value;
 
             if (current)
-            {
-                current.Enable(this);
-            }
+                AssignNewInteraction();
+
+            primaryPrompt.UpdateVisibility();
+            secondaryPrompt.UpdateVisibility();
+        }
+    }
+
+    private void DiscardCurrentInteraction()
+    {
+        if (current)
+            current.Disable();
+        
+        primaryPrompt.UnbindInteraction();
+        secondaryPrompt.UnbindInteraction();
+    }
+
+    private void AssignNewInteraction()
+    {
+        current.Enable(this);
+
+        if (current.Primary)
+        {
+            current.Primary.SetInteractor(this);
+            primaryPrompt.BindInteraction(current.Primary);
+        }
+
+        if (current.Secondary)
+        {
+            current.Secondary.SetInteractor(this);
+            secondaryPrompt.BindInteraction(current.Secondary);
         }
     }
 
@@ -68,57 +92,27 @@ public class Interactor : MonoBehaviour
         secondaryPrompt.gameObject.SetActive(false);
     }
 
-    private void OnTriggerEnter(Collider other)
-    {
-        var interactable = other.GetComponent<Interactable>();
-
-        if (!interactable)
-            return;
-
-        interactables.Add(interactable);
-        UpdateInteractables();
-    }
-
-    private void OnTriggerExit(Collider other)
-    {
-        var interactable = other.GetComponent<Interactable>();
-
-        if (interactables.Remove(interactable))
-            UpdateInteractables();
-    }
-
     private void OnInteract()
     {
-        if (!Current)
+        if (!Current || !Current.Primary)
             return;
 
-        if (Current.Interact())
+        if (Current.Primary.Interact())
+            OnInterruption?.Invoke();
+    }
+
+    private void OnSecondaryInteract()
+    {
+        if (!Current || !Current.Secondary)
+            return;
+
+        if (Current.Secondary.Interact())
             OnInterruption?.Invoke();
     }
 
     public void FreeFromInteraction()
     {
         OnInteractionFreed?.Invoke();
-    }
-
-    private void UpdateInteractables()
-    {
-        float minDist = float.MaxValue;
-        var pos = transform.position;
-
-        Interactable closestInteractable = null;
-
-        foreach (var i in interactables)
-        {
-            var dist = Vector3.Distance(pos, i.transform.position);
-            if (dist > minDist)
-                continue;
-
-            minDist = dist;
-            closestInteractable = i;
-        }
-
-        Current = closestInteractable;
     }
 
     private void UpdatePromptIcons(PlayerInput obj)

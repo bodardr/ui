@@ -2,7 +2,10 @@
 
 public abstract class Interaction : MonoBehaviour
 {
-    private Interactor interactor;
+    protected Interactor interactor;
+    protected InteractionPrompt prompt;
+
+    public abstract string InteractionName { get; }
 
     public abstract bool CanInteract(Interactor interactor);
 
@@ -12,9 +15,14 @@ public abstract class Interaction : MonoBehaviour
     /// <returns>Returns true if it interrupts the interactor's actions, false if it is a single, uninterrupted interaction</returns>
     public abstract bool Interact();
 
-    public void AssignInteractor(Interactor interactor)
+    public void SetInteractor(Interactor interactor)
     {
         this.interactor = interactor;
+    }
+
+    public void UnassignInteractor()
+    {
+        interactor = null;
     }
 
     public void LiberateInteractor()
@@ -22,7 +30,13 @@ public abstract class Interaction : MonoBehaviour
         interactor.FreeFromInteraction();
     }
 
-    public abstract void ShowPrompt();
+    public void SetPrompt(InteractionPrompt interactionPrompt)
+    {
+        prompt = interactionPrompt;
+    }
 
-    public abstract void HidePrompt();
+    public void UnassignPrompt()
+    {
+        prompt = null;
+    }
 }

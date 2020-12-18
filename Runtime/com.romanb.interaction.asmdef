@@ -3,7 +3,8 @@
     "rootNamespace": "RomanB.Interaction.Runtime",
     "references": [
         "Unity.TextMeshPro",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "com.romanb.utility"
     ],
     "includePlatforms": [],
     "excludePlatforms": [
