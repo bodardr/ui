@@ -31,7 +31,7 @@ public class InteractionElementDrawer : PropertyDrawer
 
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
     {
-        //testing hooks again
+        //testing githooks.
         EditorGUI.BeginProperty(position, label, property);
 
         var indentLevel = EditorGUI.indentLevel;
