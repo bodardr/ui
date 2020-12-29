@@ -1,7 +1,13 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 class ColliderInteractor : Interactor
 {
+    private void Update()
+    {
+        UpdateInteractables();
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         var interactable = other.GetComponent<Interactable>();
@@ -10,15 +16,12 @@ class ColliderInteractor : Interactor
             return;
 
         interactables.Add(interactable);
-        UpdateInteractables();
     }
 
     private void OnTriggerExit(Collider other)
     {
         var interactable = other.GetComponent<Interactable>();
-
-        if (interactables.Remove(interactable))
-            UpdateInteractables();
+        interactables.Remove(interactable);
     }
 
     private void UpdateInteractables()

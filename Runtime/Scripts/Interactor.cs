@@ -33,41 +33,13 @@ public abstract class Interactor : MonoBehaviour
         get => current;
         set
         {
-            DiscardCurrentInteraction();
+            if (current)
+                current.Disable();
 
             current = value;
 
             if (current)
-                AssignNewInteraction();
-
-            primaryPrompt.UpdateVisibility();
-            secondaryPrompt.UpdateVisibility();
-        }
-    }
-
-    private void DiscardCurrentInteraction()
-    {
-        if (current)
-            current.Disable();
-        
-        primaryPrompt.UnbindInteraction();
-        secondaryPrompt.UnbindInteraction();
-    }
-
-    private void AssignNewInteraction()
-    {
-        current.Enable(this);
-
-        if (current.Primary)
-        {
-            current.Primary.SetInteractor(this);
-            primaryPrompt.BindInteraction(current.Primary);
-        }
-
-        if (current.Secondary)
-        {
-            current.Secondary.SetInteractor(this);
-            secondaryPrompt.BindInteraction(current.Secondary);
+                current.Enable(this);
         }
     }
 
@@ -75,12 +47,16 @@ public abstract class Interactor : MonoBehaviour
 
     public UnityEvent OnInteractionFreed => onInteractionFreed;
 
+    public InteractionPrompt PrimaryPrompt => primaryPrompt;
+    public InteractionPrompt SecondaryPrompt => secondaryPrompt;
+
     private void Start()
     {
         playerInput = GetComponentInParent<PlayerInput>();
 
         InstantiatePrompts();
         playerInput.onControlsChanged += UpdatePromptIcons;
+        UpdatePromptIcons(playerInput);
     }
 
     private void InstantiatePrompts()
@@ -88,8 +64,8 @@ public abstract class Interactor : MonoBehaviour
         primaryPrompt = Instantiate(promptPrefab, promptCanvas).GetComponent<InteractionPrompt>();
         secondaryPrompt = Instantiate(secondaryPromptPrefab, promptCanvas).GetComponent<InteractionPrompt>();
 
-        primaryPrompt.gameObject.SetActive(false);
-        secondaryPrompt.gameObject.SetActive(false);
+        PrimaryPrompt.gameObject.SetActive(false);
+        SecondaryPrompt.gameObject.SetActive(false);
     }
 
     private void OnInteract()
@@ -119,7 +95,7 @@ public abstract class Interactor : MonoBehaviour
     {
         bool isGamepad = obj.currentControlScheme == "Gamepad";
 
-        primaryPrompt.UpdateScheme(isGamepad);
-        secondaryPrompt.UpdateScheme(isGamepad);
+        PrimaryPrompt.UpdateScheme(isGamepad);
+        SecondaryPrompt.UpdateScheme(isGamepad);
     }
 }

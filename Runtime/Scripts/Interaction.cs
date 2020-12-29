@@ -15,28 +15,23 @@ public abstract class Interaction : MonoBehaviour
     /// <returns>Returns true if it interrupts the interactor's actions, false if it is a single, uninterrupted interaction</returns>
     public abstract bool Interact();
 
-    public void SetInteractor(Interactor interactor)
-    {
-        this.interactor = interactor;
-    }
-
-    public void UnassignInteractor()
-    {
-        interactor = null;
-    }
-
     public void LiberateInteractor()
     {
         interactor.FreeFromInteraction();
     }
 
-    public void SetPrompt(InteractionPrompt interactionPrompt)
+    public void Initialize(Interactor interactor, InteractionPrompt prompt)
     {
-        prompt = interactionPrompt;
+        this.interactor = interactor;
+        this.prompt = prompt;
     }
 
-    public void UnassignPrompt()
+    public void Clear()
     {
+        if (prompt)
+            prompt.Clear();
+
+        interactor = null;
         prompt = null;
     }
 }
