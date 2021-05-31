@@ -1,10 +1,10 @@
 {
-    "name": "com.romanb.interaction",
-    "rootNamespace": "RomanB.Interaction.Runtime",
+    "name": "com.bodardr.interaction",
+    "rootNamespace": "Bodardr.Interaction",
     "references": [
         "Unity.TextMeshPro",
         "Unity.InputSystem",
-        "com.romanb.utility"
+        "com.bodardr.utility"
     ],
     "includePlatforms": [],
     "excludePlatforms": [
