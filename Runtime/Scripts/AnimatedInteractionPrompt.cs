@@ -1,26 +1,28 @@
-﻿using DG.Tweening;
+﻿using System.Collections;
+using DG.Tweening;
 
 class AnimatedInteractionPrompt : InteractionPrompt
 {
-    protected override void Show()
+    public override IEnumerator Show()
     {
-        base.Show();
-
         if (!IsHidden)
-            return;
-        
+            yield return null;
+
         transform.DOKill();
-        transform.DOScale(1, 0.5f).From(0).SetEase(Ease.OutBack);
+        yield return transform.DOScale(1, 0.5f).From(0).SetEase(Ease.OutBack).WaitForCompletion();
+
+        yield return base.Show();
     }
 
-    protected override void Hide()
+    public override IEnumerator Hide()
     {
-        base.Hide();
-
         if (IsHidden)
-            return;
-        
+            yield return null;
+
         transform.DOKill();
-        transform.DOScale(0, 0.5f).SetEase(Ease.InBack).OnComplete(() => gameObject.SetActive(false));
+        yield return transform.DOScale(0, 0.5f).SetEase(Ease.InBack).OnComplete(() => gameObject.SetActive(false))
+            .WaitForCompletion();
+
+        yield return base.Hide();
     }
 }

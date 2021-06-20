@@ -5,34 +5,25 @@ using UnityEngine.InputSystem;
 
 public abstract class Interactor : MonoBehaviour
 {
-    protected HashSet<Interactable> interactables = new HashSet<Interactable>();
-    private Interactable current;
-
-    private PlayerInput playerInput;
-
-    private InteractionPrompt primaryPrompt;
-    private InteractionPrompt secondaryPrompt;
-
-    [SerializeField]
-    private Transform promptCanvas = null;
-
-    [SerializeField]
-    private GameObject promptPrefab = null;
-
-    [SerializeField]
-    private GameObject secondaryPromptPrefab = null;
-
     [SerializeField]
     private UnityEvent onInterruption;
 
     [SerializeField]
     private UnityEvent onInteractionFreed;
 
+    private Interactable current;
+
+    protected HashSet<Interactable> interactables = new HashSet<Interactable>();
+    private PlayerInput playerInput;
+
     protected Interactable Current
     {
         get => current;
         set
         {
+            if (current == value)
+                return;
+
             if (current)
                 current.Disable();
 
@@ -47,55 +38,29 @@ public abstract class Interactor : MonoBehaviour
 
     public UnityEvent OnInteractionFreed => onInteractionFreed;
 
-    public InteractionPrompt PrimaryPrompt => primaryPrompt;
-    public InteractionPrompt SecondaryPrompt => secondaryPrompt;
-
-    private void Start()
-    {
-        playerInput = GetComponentInParent<PlayerInput>();
-
-        InstantiatePrompts();
-        playerInput.onControlsChanged += UpdatePromptIcons;
-        UpdatePromptIcons(playerInput);
-    }
-
-    private void InstantiatePrompts()
-    {
-        primaryPrompt = Instantiate(promptPrefab, promptCanvas).GetComponent<InteractionPrompt>();
-        secondaryPrompt = Instantiate(secondaryPromptPrefab, promptCanvas).GetComponent<InteractionPrompt>();
-
-        PrimaryPrompt.gameObject.SetActive(false);
-        SecondaryPrompt.gameObject.SetActive(false);
-    }
+    public Interaction Primary { get; set; }
+    public Interaction Secondary { get; set; }
 
     private void OnInteract()
     {
-        if (!Current || !Current.Primary)
+        if (!Primary)
             return;
 
-        if (Current.Primary.Interact())
+        if (Primary.Interact(this))
             OnInterruption?.Invoke();
     }
 
     private void OnSecondaryInteract()
     {
-        if (!Current || !Current.Secondary)
+        if (!Secondary)
             return;
 
-        if (Current.Secondary.Interact())
+        if (Secondary.Interact(this))
             OnInterruption?.Invoke();
     }
 
     public void FreeFromInteraction()
     {
         OnInteractionFreed?.Invoke();
-    }
-
-    private void UpdatePromptIcons(PlayerInput obj)
-    {
-        bool isGamepad = obj.currentControlScheme == "Gamepad";
-
-        PrimaryPrompt.UpdateScheme(isGamepad);
-        SecondaryPrompt.UpdateScheme(isGamepad);
     }
 }

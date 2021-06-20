@@ -4,13 +4,8 @@ using UnityEngine;
 
 public class Interactable : MonoBehaviour
 {
-    private Interactor interactor;
-    private bool active;
-
-    private Interaction primary;
-    private Interaction secondary;
-
-    private Coroutine updateCoroutine;
+    [SerializeField]
+    private PromptPool promptPool;
 
     [SerializeField]
     private List<InteractionElement> interactions;
@@ -18,120 +13,114 @@ public class Interactable : MonoBehaviour
     [SerializeField]
     private List<InteractionElement> secondaryInteractions;
 
-    public Interaction Primary
-    {
-        get => primary;
-        private set
-        {
-            if (primary == value)
-                return;
+    [Header("Targets")]
+    [SerializeField]
+    private Transform customPrimaryTarget;
 
-            if (primary)
-                primary.Clear();
+    [SerializeField]
+    private Transform customSecondaryTarget;
 
-            primary = value;
+    [Tooltip("Offset in screen-space (0,1)")]
+    [SerializeField]
+    private float offsetY = 0.05f;
 
-            if (Active)
-            {
-                if (primary)
-                    primary.Initialize(interactor, interactor.PrimaryPrompt);
+    private Interactor interactor;
 
-                interactor.PrimaryPrompt.Interaction = primary;
-            }
-        }
-    }
+    private PoolableObject<InteractionPrompt> primaryPrompt;
+    private PoolableObject<InteractionPrompt> secondaryPrompt;
 
-    public Interaction Secondary
-    {
-        get => secondary;
-        private set
-        {
-            if (secondary == value)
-                return;
+    private Coroutine updateCoroutine;
 
-            if (secondary)
-                secondary.Clear();
-
-            secondary = value;
-
-            if (Active)
-            {
-                if (secondary)
-                    secondary.Initialize(interactor, interactor.SecondaryPrompt);
-
-                interactor.SecondaryPrompt.Interaction = secondary;
-            }
-        }
-    }
-
-    public bool Active
-    {
-        get => active;
-        set
-        {
-            active = value;
-
-            if (active)
-                updateCoroutine = StartCoroutine(UpdateInteractionsCoroutine());
-        }
-    }
 
     public void Enable(Interactor interactor)
     {
         this.interactor = interactor;
-        Active = true;
-
-        if (Primary)
-            interactor.PrimaryPrompt.Interaction = Primary;
-
-        if (Secondary)
-            interactor.SecondaryPrompt.Interaction = Secondary;
+        updateCoroutine = StartCoroutine(UpdateInteractionsCoroutine());
     }
 
     public void Disable()
     {
-        interactor.PrimaryPrompt.Clear();
-        interactor.SecondaryPrompt.Clear();
-        
-        Active = false;
+        if (updateCoroutine != null)
+            StopCoroutine(updateCoroutine);
+
+        primaryPrompt?.Release();
+        secondaryPrompt?.Release();
+
+        primaryPrompt = null;
+        secondaryPrompt = null;
+
         interactor = null;
-        
     }
 
+    /// <summary>
+    /// Coroutine that updates interactions every 0.3s.
+    /// </summary>
+    /// <returns>The coroutine.</returns>
     private IEnumerator UpdateInteractionsCoroutine()
     {
-        while (active)
+        while (isActiveAndEnabled)
         {
-            UpdateInteractions();
+            interactions.Sort((x, y) => x.weight.CompareTo(y.weight));
+            secondaryInteractions.Sort((x, y) => x.weight.CompareTo(y.weight));
+
+            foreach (var i in interactions)
+            {
+                if (!i.interaction.CanInteract(interactor))
+                    continue;
+
+                SetInteraction(true, i.interaction);
+                break;
+            }
+
+            foreach (var i in secondaryInteractions)
+            {
+                if (!i.interaction.CanInteract(interactor))
+                    continue;
+
+                SetInteraction(false, i.interaction);
+                break;
+            }
+
             yield return new WaitForSeconds(0.3f);
         }
 
         updateCoroutine = null;
     }
 
-    private void UpdateInteractions()
+    private void SetInteraction(bool isPrimary, Interaction newInteraction)
     {
-        interactions.Sort((x, y) => x.weight.CompareTo(y.weight));
-        secondaryInteractions.Sort((x, y) => x.weight.CompareTo(y.weight));
+        var currentPrompt = isPrimary ? primaryPrompt : secondaryPrompt;
 
-        FilterPossibleInteractions(interactions, out var primary);
-        FilterPossibleInteractions(secondaryInteractions, out var secondary);
-
-        Primary = primary;
-        Secondary = secondary;
-    }
-
-    private void FilterPossibleInteractions(List<InteractionElement> elements, out Interaction interaction)
-    {
-        foreach (var i in elements)
+        if (newInteraction == null)
         {
-            if (i.interaction.CanInteract(interactor))
-            {
-                interaction = i.interaction;
-                return;
-            }
+            currentPrompt?.Release();
+
+            if (isPrimary)
+                primaryPrompt = null;
+            else
+                secondaryPrompt = null;
+
+            return;
         }
 
-        interaction = null;
+        if (currentPrompt == null)
+        {
+            if (isPrimary)
+                currentPrompt = primaryPrompt = promptPool.Get();
+            else
+                currentPrompt = secondaryPrompt = promptPool.Get();
+
+            StartCoroutine(currentPrompt.Content.Show());
+        }
+
+        currentPrompt.Content.Initialize(newInteraction);
+        var customTarget = isPrimary ? customPrimaryTarget : customSecondaryTarget;
+        currentPrompt.Content.Target = customTarget ? customTarget : transform;
+        currentPrompt.Content.SetOffset(0, isPrimary ? offsetY : -offsetY);
+
+        if (isPrimary)
+            interactor.Primary = newInteraction;
+        else
+            interactor.Secondary = newInteraction;
     }
 }

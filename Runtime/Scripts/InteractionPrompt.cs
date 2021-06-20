@@ -1,12 +1,10 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class InteractionPrompt : MonoBehaviour
 {
-    private Interaction interaction;
-    private ScreenSpaceUI screenSpaceUI;
-
     [SerializeField]
     private Image controlImage = null;
 
@@ -19,30 +17,23 @@ public class InteractionPrompt : MonoBehaviour
     [SerializeField]
     private Sprite gamepadIcon = null;
 
-    public bool IsHidden { get; private set; } = true;
+    private Canvas canvas;
 
-    public Interaction Interaction
+    private ContentSizeFitter contentSizeFitter;
+    private Interaction interaction;
+    private ScreenSpaceUI screenSpaceUI;
+
+    protected bool IsHidden { get; private set; } = true;
+
+    public Transform Target
     {
-        get => interaction;
-        set
-        {
-            if (interaction == value)
-                return;
-
-            interaction = value;
-
-            if (screenSpaceUI && interaction is ITargetableInteraction targetableInteraction)
-                UpdateInteractionTarget(targetableInteraction);
-
-            UpdateText();
-            UpdateVisibility();
-        }
+        set => screenSpaceUI.Target = value;
     }
-
-    public bool HasInteraction => Interaction != null;
 
     private void Awake()
     {
+        contentSizeFitter = GetComponent<ContentSizeFitter>();
+        canvas = GetComponent<Canvas>();
         screenSpaceUI = GetComponent<ScreenSpaceUI>();
     }
 
@@ -51,45 +42,61 @@ public class InteractionPrompt : MonoBehaviour
         controlImage.sprite = isGamepad ? gamepadIcon : keyboardIcon;
     }
 
-    private void UpdateInteractionTarget(ITargetableInteraction t)
+    private void UpdateText(string newText)
     {
-        screenSpaceUI.Target = t.Target;
+        StartCoroutine(UpdateLayout());
+        promptText.text = newText;
     }
 
-    public void UpdateText()
+    public virtual IEnumerator Show()
     {
-        if (Interaction)
-            promptText.text = Interaction.InteractionName;
+        if (!IsHidden)
+            yield return null;
+
+        IsHidden = false;
+        gameObject.SetActive(true);
+
+        yield return null;
+    }
+
+    public virtual IEnumerator Hide()
+    {
+        if (IsHidden)
+            yield return null;
+
+        IsHidden = true;
+        gameObject.SetActive(false);
+
+        yield return null;
+    }
+
+    private IEnumerator UpdateLayout()
+    {
+        contentSizeFitter.enabled = false;
+        yield return null;
+        contentSizeFitter.enabled = true;
+    }
+
+    public void Initialize(Interaction interaction)
+    {
+        UpdateText(interaction.Text);
+        interaction.OnTextUpdated += UpdateText;
     }
 
     public void Clear()
     {
-        Interaction = null;
+        Target = null;
+        interaction.OnTextUpdated -= UpdateText;
+        interaction = null;
     }
 
-    private void UpdateVisibility()
+    public void SetOffset(Vector2 offset)
     {
-        if (HasInteraction)
-            Show();
-        else
-            Hide();
+        screenSpaceUI.SetOffset(offset);
     }
 
-    protected virtual void Show()
+    public void SetOffset(float offsetX, float offsetY)
     {
-        if (!IsHidden)
-            return;
-
-        IsHidden = false;
-        gameObject.SetActive(true);
-    }
-
-    protected virtual void Hide()
-    {
-        if (IsHidden)
-            return;
-
-        IsHidden = true;
-        gameObject.SetActive(false);
+        SetOffset(new Vector2(offsetX, offsetY));
     }
 }

@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 791437582255764374}
   - component: {fileID: 50424718136002810}
   - component: {fileID: 791437582255764373}
+  - component: {fileID: 5935035947750089494}
   m_Layer: 5
   m_Name: Interaction View
   m_TagString: Untagged
@@ -94,6 +95,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   target: {fileID: 0}
+  offset: {x: 0, y: 0}
 --- !u!114 &791437582255764373
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -110,6 +112,27 @@ MonoBehaviour:
   promptText: {fileID: 50424719571459531}
   keyboardIcon: {fileID: 21300000, guid: bcb19d0a893fb054c9fa86d7663daa85, type: 3}
   gamepadIcon: {fileID: 3032648595230721206, guid: bd4ce8162c7908c429c578a79738485d, type: 3}
+--- !u!223 &5935035947750089494
+Canvas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 50424718136002564}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_RenderMode: 2
+  m_Camera: {fileID: 0}
+  m_PlaneDistance: 100
+  m_PixelPerfect: 0
+  m_ReceivesEvents: 1
+  m_OverrideSorting: 0
+  m_OverridePixelPerfect: 0
+  m_SortingBucketNormalizedSize: 0
+  m_AdditionalShaderChannelsFlag: 0
+  m_SortingLayerID: 0
+  m_SortingOrder: 0
+  m_TargetDisplay: 0
 --- !u!1 &50424719099004614
 GameObject:
   m_ObjectHideFlags: 0

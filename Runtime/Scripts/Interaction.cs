@@ -1,37 +1,35 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public abstract class Interaction : MonoBehaviour
 {
     protected Interactor interactor;
-    protected InteractionPrompt prompt;
+    protected virtual string InitialText { get; }
 
-    public abstract string InteractionName { get; }
+    public string Text { get; set; } = "Interact";
 
-    public abstract bool CanInteract(Interactor interactor);
+    protected void Awake()
+    {
+        Text = InitialText;
+        OnTextUpdated += UpdateText;
+    }
+
+    private void OnDestroy()
+    {
+        OnTextUpdated = null;
+    }
+
+    private void UpdateText(string value) => Text = value;
+    public virtual bool CanInteract(Interactor interactor) => true;
 
     /// <summary>
     /// Fires the interaction
     /// </summary>
     /// <returns>Returns true if it interrupts the interactor's actions, false if it is a single, uninterrupted interaction</returns>
-    public abstract bool Interact();
+    public abstract bool Interact(Interactor interactor);
 
-    public void LiberateInteractor()
-    {
-        interactor.FreeFromInteraction();
-    }
+    public void LiberateInteractor() => interactor.FreeFromInteraction();
 
-    public void Initialize(Interactor interactor, InteractionPrompt prompt)
-    {
-        this.interactor = interactor;
-        this.prompt = prompt;
-    }
-
-    public void Clear()
-    {
-        if (prompt)
-            prompt.Clear();
-
-        interactor = null;
-        prompt = null;
-    }
+    protected void InvokeOnTextUpdated(string text) => OnTextUpdated?.Invoke(text);
+    public event Action<string> OnTextUpdated;
 }
