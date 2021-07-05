@@ -1,6 +1,6 @@
 {
   "name": "com.bodardr.interaction",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "displayName": "Interaction System",
   "description": "A customizable interaction system",
   "dependencies": {
