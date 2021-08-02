@@ -1,11 +1,10 @@
 {
-  "name": "com.bodardr.interaction",
-  "version": "0.0.17",
-  "displayName": "Interaction System",
-  "description": "A customizable interaction system",
+  "name": "com.bodardr.ui",
+  "version": "0.0.5",
+  "displayName": "UI Extensions",
+  "description": "UI Views, transitions, etc...",
   "dependencies": {
-    "com.unity.textmeshpro": "2.0.0",
-    "com.unity.inputsystem": "1.0.1"
+    "com.unity.textmeshpro": "2.0.0"
   },
   "author": {
     "name": "Roman B.",
