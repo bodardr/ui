@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 namespace Bodardr.UI
 {
+    [AddComponentMenu("UI/UI Button")]
     [RequireComponent(typeof(UIView), typeof(Button))]
     public class UIButton : MonoBehaviour, ISelectHandler, IDeselectHandler, IPointerEnterHandler, IPointerExitHandler,
         IPointerClickHandler, ISubmitHandler

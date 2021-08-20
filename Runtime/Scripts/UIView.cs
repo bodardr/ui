@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace Bodardr.UI
 {
+    [AddComponentMenu("UI/UI View")]
     [RequireComponent(typeof(CanvasGroup))]
     [DisallowMultipleComponent]
     public class UIView : MonoBehaviour
