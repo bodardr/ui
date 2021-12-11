@@ -10,6 +10,11 @@ namespace Bodardr.UI
     {
         public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
+            var prop = property.FindPropertyRelative(nameof(DotweenAnim.transformationType));
+
+            if (prop.enumValueIndex == 0)
+                return base.GetPropertyHeight(property, label);
+
             return base.GetPropertyHeight(property, label) * 2 + 2;
         }
 
@@ -23,6 +28,9 @@ namespace Bodardr.UI
             position = EditorGUI.PrefixLabel(position, label);
             EditorGUIUtility.labelWidth = labelWidth;
 
+
+            var transformationTypeProp = property.FindPropertyRelative(nameof(DotweenAnim.transformationType));
+
             position.height = 18;
 
             var totalWidth = position.width;
@@ -33,7 +41,20 @@ namespace Bodardr.UI
 
             var transitionRect = position;
             transitionRect.width = totalWidth - 240;
+
+            var isMove = transformationTypeProp.enumValueIndex == (int)TransformationType.Move;
+            if (isMove)
+                transitionRect.width /= 2;
+
             position.x += transitionRect.width + 5;
+
+            Rect moveRect = Rect.zero;
+            if (isMove)
+            {
+                moveRect = position;
+                moveRect.width = transitionRect.width;
+                position.x += moveRect.width + 5;
+            }
 
             var valueRect = position;
             valueRect.width = 180;
@@ -63,13 +84,23 @@ namespace Bodardr.UI
             var loopsTypeRect = position;
             loopsTypeRect.width = easeRect.width;
 
-            EditorGUI.PropertyField(transitionRect,
-                property.FindPropertyRelative(nameof(DotweenAnim.transformationType)),
-                GUIContent.none);
+            EditorGUI.PropertyField(transitionRect, transformationTypeProp, GUIContent.none);
+
+            switch (transformationTypeProp.enumValueIndex)
+            {
+                case (int)TransformationType.Move:
+                    var moveProp = property.FindPropertyRelative("direction");
+                    EditorGUI.PropertyField(moveRect, moveProp, GUIContent.none);
+                    break;
+                case (int)TransformationType.None:
+                    EditorGUI.indentLevel = indentLevel;
+                    EditorGUI.EndProperty();
+                    return;
+            }
 
             EditorGUIUtility.labelWidth = 35;
             EditorGUI.PropertyField(valueRect, property.FindPropertyRelative(nameof(DotweenAnim.value)),
-                new GUIContent("Value:") {tooltip = "Values from and to. X : FROM, Y : TO"});
+                new GUIContent("Value:") { tooltip = "Values from and to. X : FROM, Y : TO" });
 
             EditorGUIUtility.labelWidth = 55;
             EditorGUI.PropertyField(timeRect, property.FindPropertyRelative(nameof(DotweenAnim.duration)),

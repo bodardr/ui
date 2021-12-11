@@ -1,5 +1,10 @@
+using System;
+using System.Collections;
+using Bodardr.UI.Runtime;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 namespace Bodardr.UI
 {
@@ -8,61 +13,81 @@ namespace Bodardr.UI
     [DisallowMultipleComponent]
     public class UIView : MonoBehaviour
     {
+        private enum StartState
+        {
+            Nothing,
+            Show,
+            Hide,
+        }
+
+        private Coroutine hideAfterDelayCoroutine;
+        private RectTransform rectTransform;
+        private CanvasGroup canvasGroup;
+        private Canvas canvas;
+
+        private Tween currentTween;
+        private bool shown;
+
+
         [Header("Enabling / Disabling")]
+        [FormerlySerializedAs("onEnableCallsShow")]
+        [SerializeField]
+        private StartState onStart = StartState.Nothing;
+
         [SerializeField]
         private bool controlsSetActive = true;
 
         [SerializeField]
-        private bool onEnableCallsShow = false;
+        private bool excludeFromPanel = false;
 
         [Header("Animation")]
         [SerializeField]
-        private bool animate;
-
-        [SerializeField]
-        private DotweenAnim showAnimation = new DotweenAnim
+        private DotweenAnim showAnimation = new()
         {
             value = new Vector2(0, 1)
         };
 
         [SerializeField]
-        private DotweenAnim hideAnimation = new DotweenAnim
+        private DotweenAnim hideAnimation = new()
         {
             value = new Vector2(1, 0)
         };
 
-        private CanvasGroup canvasGroup;
+        [SerializeField]
+        private bool hideAfterDelay = false;
 
-        private Tween currentTween;
-        private bool shown;
+        [ShowIf(nameof(hideAfterDelay))]
+        [SerializeField]
+        private float hideDelay;
 
-        public bool isAnimating => currentTween is {active: true};
+        [Header("Events")]
+        [SerializeField]
+        private UnityEvent onShow;
 
-        public Tween ShowTween
+        [SerializeField]
+        private UnityEvent onHide;
+
+        private Tween ShowTween
         {
             get
             {
-                var showTween = showAnimation.GetTweenFrom(transform, canvasGroup);
-                showTween = showAnimation.GetTweenFrom(transform, canvasGroup);
-                showTween.OnComplete(() => shown = true);
-
-                if (controlsSetActive)
-                    showTween.OnStart(() => gameObject.SetActive(true));
-
+                var showTween = showAnimation.GetTweenFrom(rectTransform, canvas, canvasGroup, TweenAnimType.Override);
+                showTween.OnComplete(() =>
+                {
+                    if (hideAfterDelay)
+                        hideAfterDelayCoroutine = StartCoroutine(HideAfterDelayCoroutine());
+                });
                 return showTween;
             }
         }
 
-        public Tween HideTween
+        private Tween HideTween
         {
             get
             {
-                var hideTween = hideAnimation.GetTweenFrom(transform, canvasGroup);
-                hideTween = hideAnimation.GetTweenFrom(transform, canvasGroup);
+                var hideTween = hideAnimation.GetTweenFrom(rectTransform, canvas, canvasGroup, TweenAnimType.Override);
                 hideTween.OnComplete(() =>
                 {
-                    shown = false;
-
                     if (controlsSetActive)
                         gameObject.SetActive(false);
                 });
@@ -72,19 +97,35 @@ namespace Bodardr.UI
         }
 
         public bool IsShown => shown;
+
         public bool IsHidden => !shown;
+
+        public bool ExcludeFromPanel => excludeFromPanel;
+
 
         private void Awake()
         {
+            rectTransform = GetComponent<RectTransform>();
             canvasGroup = GetComponent<CanvasGroup>();
+            canvas = GetComponentInParent<Canvas>();
+
+            showAnimation.Initialize(rectTransform);
+            hideAnimation.Initialize(rectTransform);
         }
 
-        private void OnEnable()
+        private void Start()
         {
-            if (!onEnableCallsShow)
-                return;
-
-            Show();
+            switch (onStart)
+            {
+                case StartState.Show:
+                    InstantShow();
+                    break;
+                case StartState.Hide:
+                    InstantHide();
+                    break;
+                case StartState.Nothing:
+                    break;
+            }
         }
 
         private void OnDisable()
@@ -92,32 +133,80 @@ namespace Bodardr.UI
             InstantHide();
         }
 
+        private void OnEnable()
+        {
+            if (canvasGroup)
+                canvasGroup.interactable = true;
+        }
+
         [ContextMenu("Show")]
         public void Show()
         {
-            if (!animate)
+            Show(true);
+        }
+
+        public void Show(bool useDeltaTime)
+        {
+            if (controlsSetActive)
+                gameObject.SetActive(true);
+            
+            if (hideAfterDelayCoroutine != null)
+                StopCoroutine(hideAfterDelayCoroutine);
+
+            if (IsShown)
             {
+                if (hideAfterDelay)
+                    hideAfterDelayCoroutine = StartCoroutine(HideAfterDelayCoroutine());
+                
+                return;
+            }
+
+            shown = true;
+            onShow.Invoke();
+
+            if (hideAnimation.transformationType == TransformationType.None)
+            {
+                CompleteCurrentTween();
                 InstantShow();
                 return;
             }
 
-            SetTween(ShowTween);
+            if (canvasGroup)
+                canvasGroup.interactable = true;
+            
+            SetTween(ShowTween, useDeltaTime);
         }
 
         [ContextMenu("Hide")]
         public void Hide()
         {
-            if (!animate)
+            Hide(true);
+        }
+
+        public void Hide(bool useDeltaTime)
+        {
+            if (IsHidden)
+                return;
+
+            shown = false;
+
+            onHide.Invoke();
+
+            if (hideAnimation.transformationType == TransformationType.None)
             {
                 InstantHide();
                 return;
             }
 
-            SetTween(HideTween);
+            if (canvasGroup)
+                canvasGroup.interactable = false;
+
+            SetTween(HideTween, useDeltaTime);
         }
 
         private void InstantShow()
         {
+            canvasGroup.interactable = true;
             canvasGroup.alpha = 1;
             transform.localScale = Vector3.one;
 
@@ -127,24 +216,36 @@ namespace Bodardr.UI
 
         private void InstantHide()
         {
-            if (hideAnimation.transformationType == TransformationType.Fade)
-                canvasGroup.alpha = 0;
-            else
-                transform.localScale = Vector3.zero;
+            canvasGroup.interactable = false;
+
+            switch (hideAnimation.transformationType)
+            {
+                case TransformationType.Fade:
+                    canvasGroup.alpha = 0;
+                    break;
+                case TransformationType.Scale:
+                    transform.localScale = Vector3.zero;
+                    break;
+                case TransformationType.Move:
+                    rectTransform.anchoredPosition = hideAnimation.GetOffPosition(rectTransform, canvas);
+                    break;
+            }
 
             if (controlsSetActive)
                 gameObject.SetActive(false);
         }
 
-        public void SetTween(Tween tween)
+        public void SetTween(Tween tween, bool useDeltaTime = false)
         {
             CompleteCurrentTween();
+
             currentTween = tween;
+            currentTween.SetUpdate(!useDeltaTime);
         }
 
         public void SetTween(DotweenAnim dotweenAnim, TweenAnimType tweenAnimType = TweenAnimType.Additive)
         {
-            SetTween(dotweenAnim.GetTweenFrom(transform, canvasGroup, tweenAnimType));
+            SetTween(dotweenAnim.GetTweenFrom(rectTransform, canvas, canvasGroup, tweenAnimType));
         }
 
         private void CompleteCurrentTween()
@@ -152,10 +253,15 @@ namespace Bodardr.UI
             if (currentTween == null)
                 return;
 
-            if (currentTween.active)
-                currentTween.Complete(true);
+            currentTween.OnComplete(null);
+            currentTween.Kill(true);
+            currentTween = null;
+        }
 
-            currentTween.Kill();
+        private IEnumerator HideAfterDelayCoroutine()
+        {
+            yield return new WaitForSecondsRealtime(hideDelay);
+            Hide();
         }
     }
 }

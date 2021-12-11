@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using DG.Tweening;
 using DG.Tweening.Core;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace Bodardr.UI
 {
@@ -9,8 +11,12 @@ namespace Bodardr.UI
     public class DotweenAnim
     {
         public TransformationType transformationType;
+        private readonly bool isReversed = false;
+        
+        public Direction direction;
 
         public Vector2 value;
+        private Vector2 initialOffset;
 
         public float duration;
 
@@ -18,7 +24,6 @@ namespace Bodardr.UI
 
         public int loops = 0;
         public LoopType loopType;
-        private readonly bool isReversed = false;
 
         public DotweenAnim()
         {
@@ -37,50 +42,91 @@ namespace Bodardr.UI
 
         public static DotweenAnim operator -(DotweenAnim a) => new DotweenAnim(a, true);
 
-        public Tween GetTweenFrom(Transform transform, CanvasGroup canvasGroup,
+        public void Initialize(RectTransform rectTransform)
+        {
+            initialOffset = rectTransform.anchoredPosition;
+        }
+        
+        public Tween GetTweenFrom(RectTransform transform, Canvas canvas, CanvasGroup canvasGroup,
             TweenAnimType tweenType = TweenAnimType.Additive)
         {
-            Tween tween;
+            Tweener tween = null;
 
             switch (transformationType)
             {
                 case TransformationType.Scale:
-                    var a = transform.DOScale(isReversed ? value.x : value.y, duration)
-                        .From(isReversed ? value.y : value.x);
-
-                    if (tweenType == TweenAnimType.Override && loops == 0)
-                        a.NoFrom();
-
-                    tween = a;
+                    tween = transform.DOScale(value.y, duration);
+                    
+                    if (tweenType == TweenAnimType.Override && loops >= 0)
+                        tween.ChangeStartValue(value.x * Vector3.one);
                     break;
 
                 case TransformationType.Fade:
-                    var b = canvasGroup.DOFade(isReversed ? value.x : value.y, duration)
-                        .From(isReversed ? value.y : value.x);
-
-                    if (tweenType == TweenAnimType.Override && loops == 0)
-                        b.NoFrom();
-
-                    tween = b;
+                    tween = canvasGroup.DOFade(value.y, duration);
+                    
+                    if (tweenType == TweenAnimType.Override && loops >= 0)
+                        tween.ChangeStartValue(value.x);
                     break;
 
-                default:
-                    var c = canvasGroup.DOFade(isReversed ? value.x : value.y, duration)
-                        .From(isReversed ? value.y : value.x);
+                case TransformationType.Move:
+                    var fromPos = GetOffPosition(transform, canvas); 
+                    
+                    var a = Vector2.Lerp(fromPos, initialOffset, value.x);
+                    var b = Vector2.Lerp(fromPos, initialOffset, value.y);
 
-                    if (tweenType == TweenAnimType.Override && loops == 0)
-                        c.NoFrom();
-
-                    tween = c;
+                    tween = transform.DOAnchorPos(b, duration).From(a);
                     break;
             }
 
+            if (tween == null)
+                return null;
+
             tween.SetEase(ease);
+            
+            if (isReversed)
+                tween.IsBackwards();
 
             if (loops != 0)
                 tween.SetLoops(loops, loopType);
 
             return tween;
+        }
+
+        public Vector2 GetOffPosition(RectTransform transform, Canvas canvas)
+        {
+            
+            // 1         2
+            //   corners
+            // 0         3
+            var rect = transform.rect;
+
+
+            var cam = canvas.renderMode == RenderMode.ScreenSpaceCamera ? Camera.main : null;
+                   
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(transform, Vector2.zero,
+                cam, out var min);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(transform,
+                new Vector2(Screen.currentResolution.width, Screen.currentResolution.height), cam, out var max);
+
+            Vector2 fromPos = Vector2.zero;
+                    
+            switch (direction)
+            {
+                case Direction.Up:
+                    fromPos = new Vector2(0, min.y - rect.height);
+                    break;
+                case Direction.Down:
+                    fromPos = new Vector2(0, max.y + rect.height);
+                    break;
+                case Direction.Left:
+                    fromPos = new Vector2(max.x + rect.width, 0);
+                    break;
+                case Direction.Right:
+                    fromPos = new Vector2(min.x - rect.width, 0);
+                    break;
+            }
+
+            return fromPos + transform.anchoredPosition;
         }
     }
 
@@ -92,7 +138,17 @@ namespace Bodardr.UI
 
     public enum TransformationType
     {
+        None,
         Scale,
         Fade,
+        Move,
+    }
+
+    public enum Direction
+    {
+        Up,
+        Down,
+        Left,
+        Right
     }
 }
