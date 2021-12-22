@@ -149,7 +149,7 @@ namespace Bodardr.UI
         {
             if (controlsSetActive)
                 gameObject.SetActive(true);
-            
+
             if (hideAfterDelayCoroutine != null)
                 StopCoroutine(hideAfterDelayCoroutine);
 
@@ -157,7 +157,7 @@ namespace Bodardr.UI
             {
                 if (hideAfterDelay)
                     hideAfterDelayCoroutine = StartCoroutine(HideAfterDelayCoroutine());
-                
+
                 return;
             }
 
@@ -173,7 +173,7 @@ namespace Bodardr.UI
 
             if (canvasGroup)
                 canvasGroup.interactable = true;
-            
+
             SetTween(ShowTween, useDeltaTime);
         }
 
@@ -206,6 +206,9 @@ namespace Bodardr.UI
 
         private void InstantShow()
         {
+            if (!canvasGroup)
+                canvasGroup = GetComponent<CanvasGroup>();
+            
             canvasGroup.interactable = true;
             canvasGroup.alpha = 1;
             transform.localScale = Vector3.one;
@@ -233,6 +236,15 @@ namespace Bodardr.UI
 
             if (controlsSetActive)
                 gameObject.SetActive(false);
+        }
+
+        public void ToggleVisibility()
+        {
+            if (IsShown)
+                Hide();
+            else
+
+                Show();
         }
 
         public void SetTween(Tween tween, bool useDeltaTime = false)
