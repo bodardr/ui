@@ -128,11 +128,6 @@ namespace Bodardr.UI
             }
         }
 
-        private void OnDisable()
-        {
-            InstantHide();
-        }
-
         private void OnEnable()
         {
             if (canvasGroup)
