@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using Bodardr.UI.Runtime;
 using DG.Tweening;

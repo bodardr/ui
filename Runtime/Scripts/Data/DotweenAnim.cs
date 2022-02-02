@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Diagnostics;
 using DG.Tweening;
-using DG.Tweening.Core;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace Bodardr.UI
 {

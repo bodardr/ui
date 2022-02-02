@@ -18,6 +18,7 @@ namespace Bodardr.UI.Runtime
         private List<UIView> childrenViews;
 
         private CanvasGroup canvasGroup;
+        private bool isOpen = false;
 
         [SerializeField]
         [Tooltip(
@@ -53,6 +54,8 @@ namespace Bodardr.UI.Runtime
         public bool IsPersistent => isPersistent;
         public bool HideOnNewPanelPushed => hideOnNewPanelPushed;
         public bool HideLastPanel => hideLastPanel;
+
+        public bool IsOpen => isOpen;
 
         public event Action OnPanelOpened;
         public event Action OnPanelClosed;
@@ -121,6 +124,8 @@ namespace Bodardr.UI.Runtime
             canvasGroup.interactable = true;
             canvasGroup.blocksRaycasts = true;
 
+            isOpen = true;
+
             switch (selectionStrategy)
             {
                 case SelectionStrategy.Specified:
@@ -142,6 +147,8 @@ namespace Bodardr.UI.Runtime
 
             uiView.Hide(useDeltaTime);
 
+            isOpen = false;
+            
             foreach (var view in childrenViews)
                 view.Hide(useDeltaTime);
 

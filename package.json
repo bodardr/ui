@@ -1,6 +1,6 @@
 {
   "name": "com.bodardr.ui",
-  "version": "0.0.18",
+  "version": "0.0.19",
   "displayName": "UI Extensions",
   "description": "UI Views, transitions, etc...",
   "dependencies": {
