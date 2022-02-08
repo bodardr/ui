@@ -13,13 +13,19 @@ namespace Bodardr.UI
     {
         private UIView uiView;
         private Button button;
-        
+
         private EventTriggerType previousEventType;
 
         private Graphic[] childrenGraphics;
 
         private bool wasInteractable;
         private bool isInteractable;
+
+        private Tween currentTween;
+
+        private RectTransform rectTransform;
+        private CanvasGroup canvasGroup;
+        private Canvas canvas;
 
         private bool IsColorTintingChildrenGraphics =>
             applyColorTintToChildrenGraphics && button.transition == Selectable.Transition.ColorTint;
@@ -62,11 +68,14 @@ namespace Bodardr.UI
             uiView = GetComponent<UIView>();
             button = GetComponent<Button>();
 
+            canvasGroup = GetComponent<CanvasGroup>();
+            canvas = GetComponentInParent<Canvas>();
+
             if (applyColorTintToChildrenGraphics)
                 childrenGraphics = GetComponentsInChildren<Graphic>(true);
 
-            var rectTransform = (RectTransform)transform;
-            
+            rectTransform = (RectTransform)transform;
+
             pressAnim.Initialize(rectTransform);
             releaseAnim.Initialize(rectTransform);
             hoverAnim.Initialize(rectTransform);
@@ -102,7 +111,7 @@ namespace Bodardr.UI
             if (!button.interactable)
                 return;
 
-            uiView.SetTween(hoverAnim);
+            SetTween(hoverAnim);
 
             if (IsColorTintingChildrenGraphics)
                 CrossFadeAllGraphics(button.colors.selectedColor);
@@ -114,9 +123,9 @@ namespace Bodardr.UI
         {
             if (previousEventType is EventTriggerType.Select or EventTriggerType.PointerDown)
                 if (hoverAnim.loops <= 0)
-                    uiView.SetTween(toDefaultTween);
+                    SetTween(toDefaultTween);
                 else
-                    uiView.SetTween(-hoverAnim);
+                    SetTween(-hoverAnim);
 
             if (button.interactable && IsColorTintingChildrenGraphics)
                 CrossFadeAllGraphics(button.colors.normalColor);
@@ -129,7 +138,7 @@ namespace Bodardr.UI
             if (!button.interactable)
                 return;
 
-            uiView.SetTween(releaseAnim);
+            SetTween(releaseAnim);
 
             if (IsColorTintingChildrenGraphics)
                 CrossFadeAllGraphics(button.colors.pressedColor);
@@ -142,8 +151,8 @@ namespace Bodardr.UI
             if (!button.interactable)
                 return;
 
-            uiView.SetTween(pressAnim);
-            
+            SetTween(pressAnim);
+
             if (IsColorTintingChildrenGraphics)
                 CrossFadeAllGraphics(button.colors.pressedColor);
 
@@ -176,6 +185,24 @@ namespace Bodardr.UI
         public void OnPointerExit(PointerEventData eventData)
         {
             OnDeselect(eventData);
+        }
+
+        private void SetTween(DotweenAnim tween)
+        {
+            CompleteCurrentTween();
+
+            currentTween = tween.GetTweenFrom(rectTransform, canvas, canvasGroup);
+            currentTween.SetUpdate(true);
+        }
+
+        private void CompleteCurrentTween()
+        {
+            if (currentTween == null)
+                return;
+
+            currentTween.OnComplete(null);
+            currentTween.Kill(true);
+            currentTween = null;
         }
 
         private void CrossFadeAllGraphics(Color color)

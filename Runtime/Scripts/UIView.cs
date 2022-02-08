@@ -27,7 +27,6 @@ namespace Bodardr.UI
         private Tween currentTween;
         private bool shown;
 
-
         [Header("Enabling / Disabling")]
         [FormerlySerializedAs("onEnableCallsShow")]
         [SerializeField]
@@ -101,7 +100,6 @@ namespace Bodardr.UI
 
         public bool ExcludeFromPanel => excludeFromPanel;
 
-
         private void Awake()
         {
             rectTransform = GetComponent<RectTransform>();
@@ -123,6 +121,7 @@ namespace Bodardr.UI
                     InstantHide();
                     break;
                 case StartState.Nothing:
+                    shown = gameObject.activeSelf;
                     break;
             }
         }
@@ -202,7 +201,9 @@ namespace Bodardr.UI
         {
             if (!canvasGroup)
                 canvasGroup = GetComponent<CanvasGroup>();
-            
+
+            shown = true;
+
             canvasGroup.interactable = true;
             canvasGroup.alpha = 1;
             transform.localScale = Vector3.one;
@@ -214,6 +215,8 @@ namespace Bodardr.UI
         private void InstantHide()
         {
             canvasGroup.interactable = false;
+
+            shown = false;
 
             switch (hideAnimation.transformationType)
             {
@@ -237,7 +240,6 @@ namespace Bodardr.UI
             if (IsShown)
                 Hide();
             else
-
                 Show();
         }
 
@@ -251,7 +253,7 @@ namespace Bodardr.UI
 
         public void SetTween(DotweenAnim dotweenAnim, TweenAnimType tweenAnimType = TweenAnimType.Additive)
         {
-            SetTween(dotweenAnim.GetTweenFrom(rectTransform, canvas, canvasGroup, tweenAnimType));
+            SetTween(dotweenAnim.GetTweenFrom(rectTransform, canvas, canvasGroup, IsHidden ? TweenAnimType.Additive : tweenAnimType));
         }
 
         private void CompleteCurrentTween()
