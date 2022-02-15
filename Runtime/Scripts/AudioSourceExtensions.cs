@@ -3,7 +3,7 @@ using UnityEngine;
 
 public static class AudioSourceExtensions
 {
-    public static void Crossfade(this AudioSource a, AudioSource b, float duration)
+    public static void Crossfade(this AudioSource a, AudioSource b, float duration = 1)
     {
         if (!b.isPlaying)
             b.Play();
