@@ -156,6 +156,14 @@ namespace Bodardr.UI.Runtime
             OnPanelClosed?.Invoke();
         }
 
+        public void ToggleVisibility()
+        {
+            if(IsOpen)
+                Close();
+            else
+                Open();
+        }
+
         public void OnCancel(BaseEventData eventData)
         {
             if (isActiveAndEnabled)
