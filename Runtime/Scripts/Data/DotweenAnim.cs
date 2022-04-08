@@ -16,6 +16,7 @@ namespace Bodardr.UI
         private Vector2 initialOffset;
 
         public float duration;
+        public float delay;
 
         public Ease ease;
 
@@ -29,6 +30,7 @@ namespace Bodardr.UI
         public DotweenAnim(DotweenAnim copyFrom, bool reverse = false) : this()
         {
             duration = copyFrom.duration;
+            delay = copyFrom.delay;
             ease = copyFrom.ease;
             value = copyFrom.value;
             transformationType = copyFrom.transformationType;
@@ -48,7 +50,10 @@ namespace Bodardr.UI
             TweenAnimType tweenType = TweenAnimType.Additive)
         {
             Tweener tween = null;
-
+            
+            //Sets the duration to a minimal amount to avoid NaNs.
+            duration = Mathf.Max(duration, 0.01f);
+            
             switch (transformationType)
             {
                 case TransformationType.Scale:
@@ -79,6 +84,7 @@ namespace Bodardr.UI
                 return null;
 
             tween.SetEase(ease);
+            tween.SetDelay(delay);
             
             if (isReversed)
                 tween.IsBackwards();

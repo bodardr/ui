@@ -21,8 +21,10 @@ namespace Bodardr.UI.Runtime
         private bool isOpen = false;
 
         [SerializeField]
-        [Tooltip(
-            "Means it appears automatically and cannot be removed from the panel stack. Use for Main Menu Panels that you cannot cancel from.")]
+        private bool showOnStart = false;
+
+        [SerializeField]
+        [Tooltip("If true, it cannot be removed from the panel stack. Use for Main Menu Panels that you cannot cancel from.")]
         private bool isPersistent = false;
 
         [SerializeField]
@@ -67,7 +69,7 @@ namespace Bodardr.UI.Runtime
 
         private void Start()
         {
-            if (isPersistent)
+            if (showOnStart)
                 Open();
         }
 
@@ -108,15 +110,18 @@ namespace Bodardr.UI.Runtime
             if (!initialized)
                 Initialize();
 
-            UIPanelStack.Remove(this);
+            if(!UIPanelStack.Remove(this))
+                HideInternal();
         }
 
         internal void ShowInternal()
         {
-            uiView.Show(useDeltaTime);
+            if (uiView)
+                uiView.Show(useDeltaTime);
 
             foreach (var view in childrenViews)
-                view.Show(useDeltaTime);
+                if (view)
+                    view.Show(useDeltaTime);
 
             PanelOpened.Invoke();
             OnPanelOpened?.Invoke();
@@ -141,14 +146,14 @@ namespace Bodardr.UI.Runtime
         {
             if (EventSystem.current)
                 EventSystem.current.SetSelectedGameObject(null);
-            
+
             canvasGroup.interactable = false;
             canvasGroup.blocksRaycasts = false;
 
             uiView.Hide(useDeltaTime);
 
             isOpen = false;
-            
+
             foreach (var view in childrenViews)
                 view.Hide(useDeltaTime);
 
@@ -158,7 +163,7 @@ namespace Bodardr.UI.Runtime
 
         public void ToggleVisibility()
         {
-            if(IsOpen)
+            if (IsOpen)
                 Close();
             else
                 Open();

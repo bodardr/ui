@@ -125,13 +125,7 @@ namespace Bodardr.UI
                     break;
             }
         }
-
-        private void OnEnable()
-        {
-            if (canvasGroup)
-                canvasGroup.interactable = true;
-        }
-
+        
         [ContextMenu("Show")]
         public void Show()
         {
@@ -165,7 +159,10 @@ namespace Bodardr.UI
             }
 
             if (canvasGroup)
+            {
                 canvasGroup.interactable = true;
+                canvasGroup.blocksRaycasts = true;
+            }
 
             SetTween(ShowTween, useDeltaTime);
         }
@@ -192,7 +189,10 @@ namespace Bodardr.UI
             }
 
             if (canvasGroup)
+            {
                 canvasGroup.interactable = false;
+                canvasGroup.blocksRaycasts = false;
+            }
 
             SetTween(HideTween, useDeltaTime);
         }
@@ -205,6 +205,8 @@ namespace Bodardr.UI
             shown = true;
 
             canvasGroup.interactable = true;
+            canvasGroup.blocksRaycasts = true;
+            
             canvasGroup.alpha = 1;
             transform.localScale = Vector3.one;
 
@@ -215,19 +217,20 @@ namespace Bodardr.UI
         private void InstantHide()
         {
             canvasGroup.interactable = false;
+            canvasGroup.blocksRaycasts = false;
 
             shown = false;
 
             switch (hideAnimation.transformationType)
             {
-                case TransformationType.Fade:
-                    canvasGroup.alpha = 0;
-                    break;
                 case TransformationType.Scale:
                     transform.localScale = Vector3.zero;
                     break;
                 case TransformationType.Move:
                     rectTransform.anchoredPosition = hideAnimation.GetOffPosition(rectTransform, canvas);
+                    break;
+                case TransformationType.Fade:
+                    canvasGroup.alpha = 0;
                     break;
             }
 

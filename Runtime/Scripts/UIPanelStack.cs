@@ -37,7 +37,7 @@ namespace Bodardr.UI.Runtime
                 panelStack.RemoveLast();
             }
 
-            if (panelStack.Count > 0)
+            if (panelStack.Count > 0 && panelStack.Last.Value && !panelStack.Last.Value.IsOpen)
                 panelStack.Last.Value.ShowInternal();
         }
 
