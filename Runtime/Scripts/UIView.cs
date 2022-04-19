@@ -199,9 +199,6 @@ namespace Bodardr.UI
 
         private void InstantShow()
         {
-            if (!canvasGroup)
-                canvasGroup = GetComponent<CanvasGroup>();
-
             shown = true;
 
             canvasGroup.interactable = true;
