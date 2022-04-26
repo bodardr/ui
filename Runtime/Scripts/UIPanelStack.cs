@@ -18,7 +18,7 @@ namespace Bodardr.UI.Runtime
             {
                 var last = panelStack.Last.Value;
 
-                if (last.HideOnNewPanelPushed || panel.HideLastPanel)
+                if (last.HideOnNewPanelPushed && panel.HideLastPanel)
                     last.HideInternal(true);
             }
 

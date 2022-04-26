@@ -197,7 +197,7 @@ namespace Bodardr.UI
             SetTween(HideTween, useDeltaTime);
         }
 
-        private void InstantShow()
+        public void InstantShow()
         {
             shown = true;
 
@@ -211,8 +211,11 @@ namespace Bodardr.UI
                 gameObject.SetActive(true);
         }
 
-        private void InstantHide()
+        public void InstantHide()
         {
+            if (!canvasGroup)
+                return;
+            
             canvasGroup.interactable = false;
             canvasGroup.blocksRaycasts = false;
 
