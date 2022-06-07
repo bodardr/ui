@@ -40,6 +40,9 @@ namespace Bodardr.UI
         };
 
         [SerializeField]
+        private bool tweensBypassInteractableStatus;
+
+        [SerializeField]
         private bool applyColorTintToChildrenGraphics = true;
 
         [SerializeField]
@@ -108,12 +111,12 @@ namespace Bodardr.UI
 
         public void OnSelect(BaseEventData eventData)
         {
-            if (!button.interactable)
+            if (!tweensBypassInteractableStatus && !button.interactable)
                 return;
 
             SetTween(hoverAnim);
 
-            if (IsColorTintingChildrenGraphics)
+            if (button.interactable && IsColorTintingChildrenGraphics)
                 CrossFadeAllGraphics(button.colors.selectedColor);
 
             previousEventType = EventTriggerType.Select;
@@ -135,12 +138,12 @@ namespace Bodardr.UI
 
         public void OnSubmit(BaseEventData eventData)
         {
-            if (!button.interactable)
+            if (!tweensBypassInteractableStatus && !button.interactable)
                 return;
 
             SetTween(releaseAnim);
 
-            if (IsColorTintingChildrenGraphics)
+            if (button.interactable && IsColorTintingChildrenGraphics)
                 CrossFadeAllGraphics(button.colors.pressedColor);
 
             previousEventType = EventTriggerType.Submit;
@@ -148,12 +151,12 @@ namespace Bodardr.UI
 
         private void OnPress(PointerEventData eventData)
         {
-            if (!button.interactable)
+            if (!tweensBypassInteractableStatus && !button.interactable)
                 return;
 
             SetTween(pressAnim);
 
-            if (IsColorTintingChildrenGraphics)
+            if (button.interactable && IsColorTintingChildrenGraphics)
                 CrossFadeAllGraphics(button.colors.pressedColor);
 
             previousEventType = EventTriggerType.PointerDown;
