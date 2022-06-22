@@ -134,6 +134,9 @@ namespace Bodardr.UI
 
         public void Show(bool useDeltaTime)
         {
+            if (!canvasGroup)
+                canvasGroup = GetComponent<CanvasGroup>();
+            
             if (controlsSetActive)
                 gameObject.SetActive(true);
 
@@ -200,6 +203,9 @@ namespace Bodardr.UI
         public void InstantShow()
         {
             shown = true;
+
+            if (!canvasGroup)
+                canvasGroup = GetComponent<CanvasGroup>();
 
             canvasGroup.interactable = true;
             canvasGroup.blocksRaycasts = true;
