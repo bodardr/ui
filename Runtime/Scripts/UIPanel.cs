@@ -27,8 +27,9 @@ namespace Bodardr.UI.Runtime
         [Tooltip("If true, it cannot be removed from the panel stack. Use for Main Menu Panels that you cannot cancel from.")]
         private bool isPersistent = false;
 
+        [FormerlySerializedAs("useDeltaTime")]
         [SerializeField]
-        private bool useDeltaTime = true;
+        private bool useTimeScale = true;
 
         [Header("Stack Details")]
         [FormerlySerializedAs("hideOnPush")]
@@ -38,7 +39,7 @@ namespace Bodardr.UI.Runtime
         [SerializeField]
         private bool hideLastPanel = false;
 
-        [SpaceAttribute]
+        [Space]
         [Header("Events")]
         [SerializeField]
         private UnityEvent PanelOpened = new();
@@ -117,11 +118,11 @@ namespace Bodardr.UI.Runtime
         internal void ShowInternal()
         {
             if (uiView)
-                uiView.Show(useDeltaTime);
+                uiView.Show(useTimeScale);
 
             foreach (var view in childrenViews)
                 if (view)
-                    view.Show(useDeltaTime);
+                    view.Show(useTimeScale);
 
             PanelOpened.Invoke();
             OnPanelOpened?.Invoke();
@@ -150,12 +151,12 @@ namespace Bodardr.UI.Runtime
             canvasGroup.interactable = false;
             canvasGroup.blocksRaycasts = false;
 
-            uiView.Hide(useDeltaTime);
+            uiView.Hide(useTimeScale);
 
             isOpen = false;
 
             foreach (var view in childrenViews)
-                view.Hide(useDeltaTime);
+                view.Hide(useTimeScale);
 
             PanelClosed.Invoke();
             OnPanelClosed?.Invoke();
