@@ -11,25 +11,6 @@ namespace Bodardr.UI
     public class UIButton : MonoBehaviour, ISelectHandler, IDeselectHandler, IPointerEnterHandler, IPointerExitHandler,
         IPointerClickHandler, ISubmitHandler, ICancelHandler, IPointerDownHandler
     {
-        private UIView uiView;
-        private Button button;
-
-        private EventTriggerType previousEventType;
-
-        private Graphic[] childrenGraphics;
-
-        private bool wasInteractable;
-        private bool isInteractable;
-
-        private Tween currentTween;
-
-        private RectTransform rectTransform;
-        private CanvasGroup canvasGroup;
-        private Canvas canvas;
-
-        private bool IsColorTintingChildrenGraphics =>
-            applyColorTintToChildrenGraphics && button.transition == Selectable.Transition.ColorTint;
-
         private static DotweenAnim toDefaultTween = new DotweenAnim()
         {
             value = new Vector2(.8f, 1),
@@ -65,6 +46,25 @@ namespace Bodardr.UI
             value = new Vector2(0.8f, 1),
             ease = Ease.InBack,
         };
+
+        private Button button;
+        private Canvas canvas;
+        private CanvasGroup canvasGroup;
+
+        private Graphic[] childrenGraphics;
+
+        private Tween currentTween;
+        private bool isInteractable;
+
+        private EventTriggerType previousEventType;
+
+        private RectTransform rectTransform;
+        private UIView uiView;
+
+        private bool wasInteractable;
+
+        private bool IsColorTintingChildrenGraphics =>
+            applyColorTintToChildrenGraphics && button.transition == Selectable.Transition.ColorTint;
 
         private void Awake()
         {
@@ -109,6 +109,46 @@ namespace Bodardr.UI
                 CrossFadeAllGraphics(button.colors.disabledColor);
         }
 
+        public void OnCancel(BaseEventData eventData)
+        {
+            if (button.interactable && IsColorTintingChildrenGraphics)
+                CrossFadeAllGraphics(button.colors.normalColor);
+
+            previousEventType = EventTriggerType.Cancel;
+        }
+
+        public void OnDeselect(BaseEventData eventData)
+        {
+            if (previousEventType is EventTriggerType.Select or EventTriggerType.PointerDown)
+                if (hoverAnim.loops > 0)
+                    SetTween(-hoverAnim);
+
+            if (button.interactable && IsColorTintingChildrenGraphics)
+                CrossFadeAllGraphics(button.colors.normalColor);
+
+            previousEventType = EventTriggerType.Deselect;
+        }
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            OnSubmit(eventData);
+        }
+
+        public void OnPointerDown(PointerEventData eventData)
+        {
+            OnPress(eventData);
+        }
+
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            OnSelect(eventData);
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            OnDeselect(eventData);
+        }
+
         public void OnSelect(BaseEventData eventData)
         {
             if (!tweensBypassInteractableStatus && !button.interactable)
@@ -120,20 +160,6 @@ namespace Bodardr.UI
                 CrossFadeAllGraphics(button.colors.selectedColor);
 
             previousEventType = EventTriggerType.Select;
-        }
-
-        public void OnDeselect(BaseEventData eventData)
-        {
-            if (previousEventType is EventTriggerType.Select or EventTriggerType.PointerDown)
-                if (hoverAnim.loops <= 0)
-                    SetTween(toDefaultTween);
-                else
-                    SetTween(-hoverAnim);
-
-            if (button.interactable && IsColorTintingChildrenGraphics)
-                CrossFadeAllGraphics(button.colors.normalColor);
-
-            previousEventType = EventTriggerType.Deselect;
         }
 
         public void OnSubmit(BaseEventData eventData)
@@ -162,36 +188,11 @@ namespace Bodardr.UI
             previousEventType = EventTriggerType.PointerDown;
         }
 
-        public void OnCancel(BaseEventData eventData)
-        {
-            if (button.interactable && IsColorTintingChildrenGraphics)
-                CrossFadeAllGraphics(button.colors.normalColor);
-
-            previousEventType = EventTriggerType.Cancel;
-        }
-
-        public void OnPointerClick(PointerEventData eventData)
-        {
-            OnSubmit(eventData);
-        }
-
-        public void OnPointerEnter(PointerEventData eventData)
-        {
-            OnSelect(eventData);
-        }
-
-        public void OnPointerDown(PointerEventData eventData)
-        {
-            OnPress(eventData);
-        }
-
-        public void OnPointerExit(PointerEventData eventData)
-        {
-            OnDeselect(eventData);
-        }
-
         private void SetTween(DotweenAnim tween)
         {
+            if (tween.ease == Ease.Unset || tween.duration <= 0)
+                return;
+
             CompleteCurrentTween();
 
             currentTween = tween.GetTweenFrom(rectTransform, canvas, canvasGroup);
@@ -211,9 +212,7 @@ namespace Bodardr.UI
         private void CrossFadeAllGraphics(Color color)
         {
             foreach (var graphic in childrenGraphics)
-            {
                 graphic.CrossFadeColor(color, button.colors.fadeDuration, true, true);
-            }
         }
     }
 }
