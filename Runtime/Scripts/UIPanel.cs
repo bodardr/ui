@@ -1,30 +1,23 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
-using UnityEngine.UI;
-using System.Collections.Generic;
-using System.Linq;
 using UnityEngine.Serialization;
+using UnityEngine.UI;
 
 namespace Bodardr.UI.Runtime
 {
     [RequireComponent(typeof(UIView))]
     public class UIPanel : MonoBehaviour, ICancelHandler
     {
-        private bool initialized = false;
-
-        private UIView uiView;
-        private List<UIView> childrenViews;
-
-        private CanvasGroup canvasGroup;
-        private bool isOpen = false;
-
         [SerializeField]
         private bool showOnStart = false;
 
         [SerializeField]
-        [Tooltip("If true, it cannot be removed from the panel stack. Use for Main Menu Panels that you cannot cancel from.")]
+        [Tooltip(
+            "If true, it cannot be removed from the panel stack. Use for Main Menu Panels that you cannot cancel from.")]
         private bool isPersistent = false;
 
         [FormerlySerializedAs("useDeltaTime")]
@@ -54,14 +47,18 @@ namespace Bodardr.UI.Runtime
         [SerializeField]
         private Selectable firstSelected = null;
 
+        private CanvasGroup canvasGroup;
+        private List<UIView> childrenViews;
+        private bool initialized = false;
+        private bool isOpen = false;
+
+        private UIView uiView;
+
         public bool IsPersistent => isPersistent;
         public bool HideOnNewPanelPushed => hideOnNewPanelPushed;
         public bool HideLastPanel => hideLastPanel;
 
         public bool IsOpen => isOpen;
-
-        public event Action OnPanelOpened;
-        public event Action OnPanelClosed;
 
         private void Awake()
         {
@@ -73,6 +70,20 @@ namespace Bodardr.UI.Runtime
             if (showOnStart)
                 Open();
         }
+
+        private void OnDestroy()
+        {
+            UIPanelStack.Remove(this, true);
+        }
+
+        public void OnCancel(BaseEventData eventData)
+        {
+            if (isActiveAndEnabled)
+                UIPanelStack.Pop();
+        }
+
+        public event Action OnPanelOpened;
+        public event Action OnPanelClosed;
 
         private void Initialize()
         {
@@ -111,7 +122,7 @@ namespace Bodardr.UI.Runtime
             if (!initialized)
                 Initialize();
 
-            if(!UIPanelStack.Remove(this))
+            if (!UIPanelStack.Remove(this))
                 HideInternal();
         }
 
@@ -131,6 +142,13 @@ namespace Bodardr.UI.Runtime
             canvasGroup.blocksRaycasts = true;
 
             isOpen = true;
+
+            if (!EventSystem.current)
+            {
+                Debug.LogWarning(
+                    "<b>UIPanel</b> : No EventSystem has been found, so no selection override will be performed");
+                return;
+            }
 
             switch (selectionStrategy)
             {
@@ -168,17 +186,6 @@ namespace Bodardr.UI.Runtime
                 Close();
             else
                 Open();
-        }
-
-        public void OnCancel(BaseEventData eventData)
-        {
-            if (isActiveAndEnabled)
-                UIPanelStack.Pop();
-        }
-
-        private void OnDestroy()
-        {
-            UIPanelStack.Remove(this, true);
         }
     }
 
