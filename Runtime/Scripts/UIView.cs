@@ -210,8 +210,8 @@ namespace Bodardr.UI
             canvasGroup.interactable = true;
             canvasGroup.blocksRaycasts = true;
             
-            canvasGroup.alpha = 1;
-            transform.localScale = Vector3.one;
+            canvasGroup.alpha = showAnimation.value.y;
+            transform.localScale = showAnimation.value.y * Vector3.one;
 
             if (controlsSetActive)
                 gameObject.SetActive(true);
@@ -230,13 +230,13 @@ namespace Bodardr.UI
             switch (hideAnimation.transformationType)
             {
                 case TransformationType.Scale:
-                    transform.localScale = Vector3.zero;
+                    transform.localScale = hideAnimation.value.y * Vector3.one;
                     break;
                 case TransformationType.Move:
                     rectTransform.anchoredPosition = hideAnimation.GetOffPosition(rectTransform, canvas);
                     break;
                 case TransformationType.Fade:
-                    canvasGroup.alpha = 0;
+                    canvasGroup.alpha = hideAnimation.value.y;
                     break;
             }
 
