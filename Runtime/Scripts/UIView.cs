@@ -125,7 +125,7 @@ namespace Bodardr.UI
                     break;
             }
         }
-        
+
         [ContextMenu("Show")]
         public void Show()
         {
@@ -136,8 +136,8 @@ namespace Bodardr.UI
         {
             if (!canvasGroup)
                 canvasGroup = GetComponent<CanvasGroup>();
-            
-            if (controlsSetActive)
+
+            if (!gameObject.activeSelf)
                 gameObject.SetActive(true);
 
             if (hideAfterDelayCoroutine != null)
@@ -209,7 +209,7 @@ namespace Bodardr.UI
 
             canvasGroup.interactable = true;
             canvasGroup.blocksRaycasts = true;
-            
+
             canvasGroup.alpha = showAnimation.value.y;
             transform.localScale = showAnimation.value.y * Vector3.one;
 
@@ -221,7 +221,7 @@ namespace Bodardr.UI
         {
             if (!canvasGroup)
                 return;
-            
+
             canvasGroup.interactable = false;
             canvasGroup.blocksRaycasts = false;
 
@@ -262,7 +262,8 @@ namespace Bodardr.UI
 
         public void SetTween(DotweenAnim dotweenAnim, TweenAnimType tweenAnimType = TweenAnimType.Additive)
         {
-            SetTween(dotweenAnim.GetTweenFrom(rectTransform, canvas, canvasGroup, IsHidden ? TweenAnimType.Additive : tweenAnimType));
+            SetTween(dotweenAnim.GetTweenFrom(rectTransform, canvas, canvasGroup,
+                IsHidden ? TweenAnimType.Additive : tweenAnimType));
         }
 
         private void CompleteCurrentTween()
