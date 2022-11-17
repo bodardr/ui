@@ -1,5 +1,5 @@
 using System.Collections;
-using Bodardr.UI.Runtime;
+using Bodardr.Utility.Runtime;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Events;
