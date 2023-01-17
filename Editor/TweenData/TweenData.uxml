@@ -1,0 +1,32 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements"
+         xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements"
+         noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Packages/com.bodardr.ui/Editor/TweenData/TweenDataStyle.uss?fileID=7433441132597879392&amp;guid=18279fd4084988248b815ee51bdb5de1&amp;type=3#TweenDataStyle"/>
+    <ui:Label tabindex="-1" text="Label" display-tooltip-when-elided="true" name="label"
+              style="-unity-font-style: bold;"/>
+    <ui:VisualElement name="container"
+                      style="flex-direction: row; flex-wrap: nowrap; flex-shrink: 0; flex-grow: 0; justify-content: space-between; align-self: stretch;">
+        <ui:EnumField label="Type" type="Bodardr.UI.TransformationType, com.bodardr.ui.runtime" name="tweenType"
+                      binding-path="transformationType"/>
+        <ui:EnumField type="UnityEngine.EventSystems.MoveDirection, UnityEngine.UI" name="moveType"
+                      binding-path="direction" style="display: flex;"/>
+        <ui:EnumField label="Ease" type="DG.Tweening.Ease, DOTween" value="InOutSine" name="easing"
+                      binding-path="ease"/>
+    </ui:VisualElement>
+    <ui:VisualElement name="container"
+                      style="flex-direction: row; flex-wrap: nowrap; flex-shrink: 0; flex-grow: 0; align-self: stretch; justify-content: space-around;">
+        <ui:FloatField label="From" value="0" name="from" binding-path="value.x"/>
+        <ui:FloatField label="To" value="0" name="to" binding-path="value.y"/>
+        <ui:FloatField label="Time (s)" value="0" name="time" readonly="false" is-delayed="false"
+                       binding-path="duration"/>
+    </ui:VisualElement>
+    <ui:Foldout text="Advanced" value="false" style="flex-shrink: 0; flex-grow: 0; flex-direction: column;">
+        <ui:VisualElement name="container"
+                          style="flex-direction: row; justify-content: space-around; align-self: stretch;">
+            <ui:FloatField label="Delay (s)" value="0" name="delay" binding-path="delay"/>
+            <ui:FloatField label="Loops" value="0" name="loops" binding-path="loops"/>
+            <ui:EnumField label="Type" type="DG.Tweening.LoopType, DOTween" name="loopType" value="Yoyo"
+                          binding-path="loopType"/>
+        </ui:VisualElement>
+    </ui:Foldout>
+</ui:UXML>

@@ -1,0 +1,7 @@
+VisualElement#container Label {
+    min-width: auto;
+}
+
+VisualElement#container EnumField, VisualElement#container FloatField {
+    flex-grow: 1;
+}
