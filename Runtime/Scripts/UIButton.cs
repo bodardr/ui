@@ -11,7 +11,7 @@ namespace Bodardr.UI
     public class UIButton : MonoBehaviour, ISelectHandler, IDeselectHandler, IPointerEnterHandler, IPointerExitHandler,
         IPointerClickHandler, ISubmitHandler, ICancelHandler, IPointerDownHandler
     {
-        private static DotweenAnim toDefaultTween = new DotweenAnim()
+        private static TweenData toDefaultTween = new TweenData()
         {
             value = new Vector2(.8f, 1),
             duration = .25f,
@@ -27,13 +27,13 @@ namespace Bodardr.UI
         private bool applyColorTintToChildrenGraphics = true;
 
         [SerializeField]
-        private DotweenAnim hoverAnim = new DotweenAnim
+        private TweenData hoverAnim = new TweenData
         {
             value = new Vector2(1, 1)
         };
 
         [SerializeField]
-        private DotweenAnim pressAnim = new DotweenAnim()
+        private TweenData pressAnim = new TweenData()
         {
             value = new Vector2(1, 0.8f),
             ease = Ease.OutBack
@@ -41,7 +41,7 @@ namespace Bodardr.UI
 
         [FormerlySerializedAs("clickAnim")]
         [SerializeField]
-        private DotweenAnim releaseAnim = new DotweenAnim()
+        private TweenData releaseAnim = new TweenData()
         {
             value = new Vector2(0.8f, 1),
             ease = Ease.InBack,
@@ -188,7 +188,7 @@ namespace Bodardr.UI
             previousEventType = EventTriggerType.PointerDown;
         }
 
-        private void SetTween(DotweenAnim tween)
+        private void SetTween(TweenData tween)
         {
             if (tween.ease == Ease.Unset || tween.duration <= 0)
                 return;

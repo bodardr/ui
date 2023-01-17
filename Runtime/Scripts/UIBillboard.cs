@@ -8,7 +8,7 @@ public class UIBillboard : MonoBehaviour
     [SerializeField]
     private UpdateType updateType;
 
-    private void Awake()
+    private void Start()
     {
         if (!cam && Camera.main)
             cam = Camera.main.transform;
@@ -40,6 +40,9 @@ public class UIBillboard : MonoBehaviour
 
     private void UpdateBillboard()
     {
+        if (cam == null && Camera.main)
+            cam = Camera.main.transform;
+
         transform.rotation = cam!.rotation;
     }
 }

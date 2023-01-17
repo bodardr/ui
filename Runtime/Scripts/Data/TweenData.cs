@@ -5,29 +5,31 @@ using UnityEngine;
 namespace Bodardr.UI
 {
     [Serializable]
-    public class DotweenAnim
+    public class TweenData
     {
         public TransformationType transformationType;
         private readonly bool isReversed = false;
-        
+
         public Direction direction;
 
         public Vector2 value;
         private Vector2 initialOffset;
 
         public float duration;
-        public float delay;
 
         public Ease ease;
 
+        public bool advanced;
+
         public int loops = 0;
         public LoopType loopType;
+        public float delay;
 
-        public DotweenAnim()
+        public TweenData()
         {
         }
 
-        public DotweenAnim(DotweenAnim copyFrom, bool reverse = false) : this()
+        public TweenData(TweenData copyFrom, bool reverse = false) : this()
         {
             duration = copyFrom.duration;
             delay = copyFrom.delay;
@@ -35,44 +37,45 @@ namespace Bodardr.UI
             value = copyFrom.value;
             transformationType = copyFrom.transformationType;
             isReversed = reverse ? !copyFrom.isReversed : copyFrom.isReversed;
+            advanced = copyFrom.advanced;
             loops = copyFrom.loops;
             loopType = copyFrom.loopType;
         }
 
-        public static DotweenAnim operator -(DotweenAnim a) => new DotweenAnim(a, true);
+        public static TweenData operator -(TweenData a) => new(a, true);
 
         public void Initialize(RectTransform rectTransform)
         {
             initialOffset = rectTransform.anchoredPosition;
         }
-        
+
         public Tween GetTweenFrom(RectTransform transform, Canvas canvas, CanvasGroup canvasGroup,
             TweenAnimType tweenType = TweenAnimType.Additive)
         {
             Tweener tween = null;
-            
+
             //Sets the duration to a minimal amount to avoid NaNs.
             duration = Mathf.Max(duration, 0.01f);
-            
+
             switch (transformationType)
             {
                 case TransformationType.Scale:
                     tween = transform.DOScale(value.y, duration);
-                    
+
                     if (tweenType == TweenAnimType.Override && loops >= 0)
                         tween.ChangeStartValue(value.x * Vector3.one);
                     break;
 
                 case TransformationType.Fade:
                     tween = canvasGroup.DOFade(value.y, duration);
-                    
+
                     if (tweenType == TweenAnimType.Override && loops >= 0)
                         tween.ChangeStartValue(value.x);
                     break;
 
                 case TransformationType.Move:
-                    var fromPos = GetOffPosition(transform, canvas); 
-                    
+                    var fromPos = GetOffPosition(transform, canvas);
+
                     var a = Vector2.Lerp(fromPos, initialOffset, value.x);
                     var b = Vector2.Lerp(fromPos, initialOffset, value.y);
 
@@ -85,7 +88,7 @@ namespace Bodardr.UI
 
             tween.SetEase(ease);
             tween.SetDelay(delay);
-            
+
             if (isReversed)
                 tween.IsBackwards();
 
@@ -97,21 +100,20 @@ namespace Bodardr.UI
 
         public Vector2 GetOffPosition(RectTransform transform, Canvas canvas)
         {
-            
             // 1         2
             //   corners
             // 0         3
             var rect = transform.rect;
 
             var cam = canvas.renderMode == RenderMode.ScreenSpaceCamera ? canvas.worldCamera : null;
-                   
+
             RectTransformUtility.ScreenPointToLocalPointInRectangle(transform, Vector2.zero,
                 cam, out var min);
             RectTransformUtility.ScreenPointToLocalPointInRectangle(transform,
                 new Vector2(Screen.currentResolution.width, Screen.currentResolution.height), cam, out var max);
 
-            Vector2 fromPos = Vector2.zero;
-                    
+            var fromPos = Vector2.zero;
+
             switch (direction)
             {
                 case Direction.Up:
@@ -148,9 +150,9 @@ namespace Bodardr.UI
 
     public enum Direction
     {
-        Up,
-        Down,
         Left,
-        Right
+        Up,
+        Right,
+        Down
     }
 }

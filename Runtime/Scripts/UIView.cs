@@ -40,13 +40,13 @@ namespace Bodardr.UI
 
         [Header("Animation")]
         [SerializeField]
-        private DotweenAnim showAnimation = new()
+        private TweenData showAnimation = new()
         {
             value = new Vector2(0, 1)
         };
 
         [SerializeField]
-        private DotweenAnim hideAnimation = new()
+        private TweenData hideAnimation = new()
         {
             value = new Vector2(1, 0)
         };
@@ -88,6 +88,8 @@ namespace Bodardr.UI
                 {
                     if (controlsSetActive)
                         gameObject.SetActive(false);
+
+                    shown = false;
                 });
 
                 return hideTween;
@@ -115,7 +117,7 @@ namespace Bodardr.UI
             switch (onStart)
             {
                 case StartState.Show:
-                    InstantShow();
+                    Show(true, true);
                     break;
                 case StartState.Hide:
                     InstantHide();
@@ -132,7 +134,7 @@ namespace Bodardr.UI
             Show(true);
         }
 
-        public void Show(bool useDeltaTime)
+        public void Show(bool useDeltaTime, bool enforceFromValues = false)
         {
             if (!canvasGroup)
                 canvasGroup = GetComponent<CanvasGroup>();
@@ -180,8 +182,6 @@ namespace Bodardr.UI
         {
             if (IsHidden)
                 return;
-
-            shown = false;
 
             onHide.Invoke();
 
@@ -260,9 +260,9 @@ namespace Bodardr.UI
             currentTween.SetUpdate(!useDeltaTime);
         }
 
-        public void SetTween(DotweenAnim dotweenAnim, TweenAnimType tweenAnimType = TweenAnimType.Additive)
+        public void SetTween(TweenData tweenData, TweenAnimType tweenAnimType = TweenAnimType.Additive)
         {
-            SetTween(dotweenAnim.GetTweenFrom(rectTransform, canvas, canvasGroup,
+            SetTween(tweenData.GetTweenFrom(rectTransform, canvas, canvasGroup,
                 IsHidden ? TweenAnimType.Additive : tweenAnimType));
         }
 
