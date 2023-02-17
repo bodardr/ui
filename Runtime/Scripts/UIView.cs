@@ -202,6 +202,8 @@ namespace Bodardr.UI
 
         public void InstantShow()
         {
+            CompleteCurrentTween();
+            
             shown = true;
 
             if (!canvasGroup)
@@ -219,6 +221,8 @@ namespace Bodardr.UI
 
         public void InstantHide()
         {
+            CompleteCurrentTween();
+            
             if (!canvasGroup)
                 return;
 
