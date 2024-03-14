@@ -59,6 +59,7 @@ namespace Bodardr.UI.Runtime
         public bool HideLastPanel => hideLastPanel;
 
         public bool IsOpen => isOpen;
+        public UIView UIView => uiView;
 
         private void Awake()
         {
@@ -94,7 +95,7 @@ namespace Bodardr.UI.Runtime
             uiView = GetComponent<UIView>();
 
             childrenViews = GetComponentsInChildren<UIView>(true).Where(x => !x.ExcludeFromPanel).ToList();
-            childrenViews.Remove(uiView);
+            childrenViews.Remove(UIView);
 
             initialized = true;
         }
@@ -128,8 +129,8 @@ namespace Bodardr.UI.Runtime
 
         internal void ShowInternal()
         {
-            if (uiView)
-                uiView.Show(useTimeScale);
+            if (UIView)
+                UIView.Show(useTimeScale);
 
             foreach (var view in childrenViews)
                 if (view)
@@ -169,7 +170,7 @@ namespace Bodardr.UI.Runtime
             canvasGroup.interactable = false;
             canvasGroup.blocksRaycasts = false;
 
-            uiView.Hide(useTimeScale);
+            UIView.Hide(useTimeScale);
 
             isOpen = false;
 

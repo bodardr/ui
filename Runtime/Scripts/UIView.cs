@@ -108,6 +108,11 @@ namespace Bodardr.UI
             canvasGroup = GetComponent<CanvasGroup>();
             canvas = GetComponentInParent<Canvas>();
 
+            InitializeTweens();
+        }
+        public void InitializeTweens()
+        {
+
             showAnimation.Initialize(rectTransform);
             hideAnimation.Initialize(rectTransform);
         }

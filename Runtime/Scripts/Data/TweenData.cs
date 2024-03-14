@@ -105,6 +105,9 @@ namespace Bodardr.UI
             // 0         3
             var rect = transform.rect;
 
+            if (canvas == null)
+                canvas = transform.GetComponentInParent<Canvas>();
+            
             var cam = canvas.renderMode == RenderMode.ScreenSpaceCamera ? canvas.worldCamera : null;
 
             RectTransformUtility.ScreenPointToLocalPointInRectangle(transform, Vector2.zero,
