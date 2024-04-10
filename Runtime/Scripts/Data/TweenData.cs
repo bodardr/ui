@@ -104,11 +104,8 @@ namespace Bodardr.UI
             //   corners
             // 0         3
             var rect = transform.rect;
-
-            if (canvas == null)
-                canvas = transform.GetComponentInParent<Canvas>();
             
-            var cam = canvas.renderMode == RenderMode.ScreenSpaceCamera ? canvas.worldCamera : null;
+            var cam = canvas == null || canvas.renderMode != RenderMode.ScreenSpaceCamera ? null : canvas.worldCamera;
 
             RectTransformUtility.ScreenPointToLocalPointInRectangle(transform, Vector2.zero,
                 cam, out var min);
