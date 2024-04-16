@@ -88,8 +88,6 @@ namespace Bodardr.UI
                 {
                     if (controlsSetActive)
                         gameObject.SetActive(false);
-
-                    shown = false;
                 });
 
                 return hideTween;
@@ -148,7 +146,10 @@ namespace Bodardr.UI
                 gameObject.SetActive(true);
 
             if (hideAfterDelayCoroutine != null)
+            {
                 StopCoroutine(hideAfterDelayCoroutine);
+                hideAfterDelayCoroutine = null;
+            }
 
             if (IsShown)
             {
@@ -163,7 +164,6 @@ namespace Bodardr.UI
 
             if (hideAnimation.transformationType == TransformationType.None)
             {
-                CompleteCurrentTween();
                 InstantShow();
                 return;
             }
@@ -189,6 +189,7 @@ namespace Bodardr.UI
                 return;
 
             onHide.Invoke();
+            shown = false;
 
             if (hideAnimation.transformationType == TransformationType.None)
             {
@@ -207,8 +208,6 @@ namespace Bodardr.UI
 
         public void InstantShow()
         {
-            CompleteCurrentTween();
-            
             shown = true;
 
             if (!canvasGroup)
@@ -226,8 +225,6 @@ namespace Bodardr.UI
 
         public void InstantHide()
         {
-            CompleteCurrentTween();
-            
             if (!canvasGroup)
                 return;
 
@@ -263,8 +260,9 @@ namespace Bodardr.UI
 
         public void SetTween(Tween tween, bool useDeltaTime = false)
         {
-            CompleteCurrentTween();
-
+            if (currentTween != null && currentTween.active && currentTween.IsPlaying())
+                currentTween.Kill();
+                
             currentTween = tween;
             currentTween.SetUpdate(!useDeltaTime);
         }
@@ -274,17 +272,7 @@ namespace Bodardr.UI
             SetTween(tweenData.GetTweenFrom(rectTransform, canvas, canvasGroup,
                 IsHidden ? TweenAnimType.Additive : tweenAnimType));
         }
-
-        private void CompleteCurrentTween()
-        {
-            if (currentTween == null)
-                return;
-
-            currentTween.OnComplete(null);
-            currentTween.Kill(true);
-            currentTween = null;
-        }
-
+        
         private IEnumerator HideAfterDelayCoroutine()
         {
             yield return new WaitForSecondsRealtime(hideDelay);
