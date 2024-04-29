@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using Bodardr.Utility.Runtime;
 using DG.Tweening;
@@ -58,12 +59,20 @@ namespace Bodardr.UI
         [SerializeField]
         private float hideDelay;
 
+        [FormerlySerializedAs("onShow")]
         [Header("Events")]
         [SerializeField]
-        private UnityEvent onShow;
+        private UnityEvent onShowStarted;
 
+        [FormerlySerializedAs("onHide")]
         [SerializeField]
-        private UnityEvent onHide;
+        private UnityEvent onHideStarted;
+
+        public UnityEvent OnShowStarted => onShowStarted;
+        public UnityEvent OnHideStarted => onHideStarted;
+        
+        public event Action OnShowCompleted;
+        public event Action OnHideCompleted;
 
         private Tween ShowTween
         {
@@ -72,6 +81,8 @@ namespace Bodardr.UI
                 var showTween = showAnimation.GetTweenFrom(rectTransform, canvas, canvasGroup, TweenAnimType.Override);
                 showTween.OnComplete(() =>
                 {
+                    OnShowCompleted?.Invoke();
+                    
                     if (hideAfterDelay)
                         hideAfterDelayCoroutine = StartCoroutine(HideAfterDelayCoroutine());
                 });
@@ -86,6 +97,8 @@ namespace Bodardr.UI
                 var hideTween = hideAnimation.GetTweenFrom(rectTransform, canvas, canvasGroup, TweenAnimType.Override);
                 hideTween.OnComplete(() =>
                 {
+                    OnHideCompleted?.Invoke();
+                    
                     if (controlsSetActive)
                         gameObject.SetActive(false);
                 });
@@ -160,7 +173,7 @@ namespace Bodardr.UI
             }
 
             shown = true;
-            onShow.Invoke();
+            onShowStarted.Invoke();
 
             if (hideAnimation.transformationType == TransformationType.None)
             {
@@ -188,7 +201,7 @@ namespace Bodardr.UI
             if (IsHidden)
                 return;
 
-            onHide.Invoke();
+            onHideStarted.Invoke();
             shown = false;
 
             if (hideAnimation.transformationType == TransformationType.None)
