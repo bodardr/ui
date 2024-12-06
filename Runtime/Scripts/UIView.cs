@@ -155,7 +155,7 @@ namespace Bodardr.UI
             if (!canvasGroup)
                 canvasGroup = GetComponent<CanvasGroup>();
 
-            if (!gameObject.activeSelf)
+            if (!gameObject.activeInHierarchy)
                 gameObject.SetActive(true);
 
             if (hideAfterDelayCoroutine != null)
@@ -204,7 +204,7 @@ namespace Bodardr.UI
             onHideStarted.Invoke();
             shown = false;
 
-            if (hideAnimation.transformationType == TransformationType.None)
+            if (!gameObject.activeInHierarchy || hideAnimation.transformationType == TransformationType.None)
             {
                 InstantHide();
                 return;
